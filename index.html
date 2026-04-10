@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <meta charset=UTF-8>
+    <meta name=viewport content="width=device-width, initial-scale=1.0">
+    <title>DhakaNest AI • Apartment Matches in Dhaka</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-50 font-sans">
+    <!-- NAVBAR -->
+    <nav class="bg-white border-b sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-x-3">
+                <div class="w-9 h-9 bg-emerald-500 rounded-2xl flex items-center justify-center text-white text-2xl">🏠</div>
+                <h1 class="text-3xl font-semibold tracking-tighter" style="font-family: 'Space Grotesk', sans-serif;">DhakaNest<span class="text-emerald-500">AI</span></h1>
+            </div>
+            <div class="flex items-center gap-x-8 text-sm font-medium">
+                <a onclick="navigateTo('home')" class="hover:text-emerald-600 cursor-pointer flex items-center gap-x-1" id="nav-home">
+                    <span>Home</span>
+                </a>
+                <a onclick="navigateTo('owner')" class="hover:text-emerald-600 cursor-pointer flex items-center gap-x-1" id="nav-owner">
+                    <span>For Owners</span>
+                </a>
+                <a onclick="navigateTo('tenant')" class="hover:text-emerald-600 cursor-pointer flex items-center gap-x-1" id="nav-tenant">
+                    <span>For Tenants</span>
+                </a>
+                <div onclick="showProfile()" class="flex items-center gap-x-2 cursor-pointer">
+                    <div id="user-avatar" class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-sm font-semibold">👤</div>
+                    <div>
+                        <p id="user-name-display" class="text-sm font-medium">Guest</p>
+                        <p class="text-[10px] text-slate-500 -mt-0.5">Dhaka, BD</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="px-5 py-2 text-sm font-semibold border border-slate-300 hover:border-slate-400 rounded-3xl flex items-center gap-x-2">
+                    <span>Logout</span>
+                </button>
+                <div class="flex items-center bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-3xl">
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-1"></div>
+                    AI Agent Online
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO HOME SCREEN -->
+    <div id="screen-home" class="max-w-7xl mx-auto px-6 py-12">
+        <div class="grid grid-cols-2 gap-12 items-center">
+            <div>
+                <div class="inline-flex items-center gap-x-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-3xl text-sm font-medium mb-6">
+                    <span class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    </span>
+                    <span>Impact Dhaka Hackathon 2026 • Live Demo</span>
+                </div>
+                <h1 class="text-6xl leading-none font-semibold tracking-tighter" style="font-family: 'Space Grotesk', sans-serif;">
+                    Find your perfect<br>home in Dhaka with<br><span class="text-emerald-500">AI intelligence</span>
+                </h1>
+                <p class="mt-6 text-xl text-slate-600 max-w-md">
+                    Safe matching between owners & tenants. Natural language search. Verified profiles. 
+                    Real-time maps. Built live at Impact Dhaka AI Hackathon.
+                </p>
+                <div class="flex gap-x-4 mt-10">
+                    <button onclick="navigateTo('tenant')" class="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-3xl text-lg font-semibold flex items-center gap-x-3 shadow-xl shadow-emerald-500/30">
+                        <span>Start as Tenant →</span>
+                    </button>
+                    <button onclick="navigateTo('owner')" class="px-8 py-4 border-2 border-emerald-500 hover:bg-emerald-50 text-emerald-700 rounded-3xl text-lg font-semibold flex items-center">
+                        Post your apartment as Owner
+                    </button>
+                </div>
+                <div class="mt-12 flex items-center gap-x-8 text-sm">
+                    <div class="flex -space-x-4">
+                        <div class="w-8 h-8 bg-white border-2 border-white rounded-2xl shadow flex items-center justify-center text-lg">🕌</div>
+                        <div class="w-8 h-8 bg-white border-2 border-white rounded-2xl shadow flex items-center justify-center text-lg">🛒</div>
+                        <div class="w-8 h-8 bg-white border-2 border-white rounded-2xl shadow flex items-center justify-center text-lg">🚇</div>
+                    </div>
+                    <p class="text-slate-500">Nearby mosques, markets & metro calculated automatically</p>
+                    <div class="h-12 w-px bg-slate-200"></div>
+                    <div>
+                        <div class="flex text-amber-400">★★★★★</div>
+                        <p class="text-xs text-slate-500">4.98 average rating from 1,284 users</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-3xl p-8 shadow-xl">
+                <div class="text-emerald-500 text-sm font-semibold mb-4 flex items-center justify-between">
+                    LIVE MATCHES IN DHAKA <span class="text-xs bg-emerald-100 px-3 py-1 rounded-3xl">32 new today</span>
+                </div>
+                <div id="live-matches" class="space-y-6"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OWNER SCREEN (embedded) -->
+    <div id="screen-owner" class="max-w-7xl mx-auto px-6 py-12 hidden">
+        <h2 class="text-4xl font-semibold tracking-tight mb-2">Homeowner Dashboard</h2>
+        <p class="text-slate-600 mb-8">List your apartment • Verified tenants only • AI finds perfect matches</p>
+        
+        <div class="grid grid-cols-12 gap-8">
+            <div class="col-span-12 lg:col-span-5 bg-white rounded-3xl p-8 shadow">
+                <h3 class="font-semibold text-xl mb-6 flex items-center gap-x-2">
+                    <span>📍</span> Post a new apartment
+                </h3>
+                <form id="owner-form" onsubmit="postApartment(event)">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="text-sm font-medium block mb-2">Location (Dhaka)</label>
+                            <div class="flex gap-3">
+                                <input id="location-input" type="text" placeholder="e.g. Dhanmondi 27" class="flex-1 px-5 py-4 border border-slate-200 rounded-3xl">
+                                <button onclick="getCurrentLocation()" type="button" class="px-6 bg-slate-900 hover:bg-black text-white rounded-3xl text-sm">📍 Use my location</button>
+                            </div>
+                            <div id="owner-map" class="mt-4 hidden"></div>
+                            <input type="hidden" id="lat-input">
+                            <input type="hidden" id="lng-input">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm font-medium block mb-2">Monthly Rent (৳)</label>
+                                <input id="rent-input" type="number" placeholder="18000" class="w-full px-5 py-4 border border-slate-200 rounded-3xl">
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium block mb-2">No. of Rooms</label>
+                                <input id="rooms-input" type="number" placeholder="2" class="w-full px-5 py-4 border border-slate-200 rounded-3xl">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm font-medium block mb-2">Gas</label>
+                                <select id="gas-input" class="w-full px-5 py-4 border border-slate-200 rounded-3xl">
+                                    <option value="Line">Line</option>
+                                    <option value="Cylinder">Cylinder</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium block mb-2">Electricity</label>
+                                <select id="electricity-input" class="w-full px-5 py-4 border border-slate-200 rounded-3xl">
+                                    <option value="Prepaid">Prepaid</option>
+                                    <option value="Postpaid">Postpaid</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm font-medium block mb-2">Lift</label>
+                                <div class="flex gap-4">
+                                    <label><input type="radio" name="lift" value="Yes" checked> Yes</label>
+                                    <label><input type="radio" name="lift" value="No"> No</label>
+                                </div>
+                                <input id="lift-charge-input" type="text" placeholder="Lift charge" class="mt-3 w-full px-5 py-4 border rounded-3xl">
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium block mb-2">Garage</label>
+                                <div class="flex gap-4">
+                                    <label><input type="radio" name="garage" value="Yes"> Yes</label>
+                                    <label><input type="radio" name="garage" value="No" checked> No</label>
+                                </div>
+                                <input id="garage-charge-input" type="text" placeholder="Garage charge" class="mt-3 w-full px-5 py-4 border rounded-3xl">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="text-sm font-medium block mb-2">Preferred Tenants</label>
+                            <textarea id="preferences-input" rows="3" placeholder="Family only, no bachelors, professionals preferred..." class="w-full px-5 py-4 border rounded-3xl"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="w-full py-6 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xl rounded-3xl">
+                            🚀 Publish Apartment to AI Database
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="col-span-12 lg:col-span-7">
+                <div class="flex justify-between items-baseline mb-6">
+                    <h3 class="font-semibold text-2xl">My Posted Apartments <span id="my-flats-count" class="text-emerald-500">(0)</span></h3>
+                    <button onclick="refreshMyFlats()" class="text-sm text-emerald-600">⟳ Refresh</button>
+                </div>
+                <div id="my-flats-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TENANT SCREEN (embedded) -->
+    <div id="screen-tenant" class="max-w-7xl mx-auto px-6 py-12 hidden">
+        <div class="flex justify-between items-end mb-8">
+            <div>
+                <h2 class="text-4xl font-semibold tracking-tight">Tenant AI Search</h2>
+                <p class="text-slate-600">Talk naturally to our AI agent • Get best matches instantly</p>
+            </div>
+            <div class="flex gap-x-4">
+                <button onclick="showExamplePrompts()" class="px-5 py-2 border rounded-3xl hover:bg-slate-50">💡 Example searches</button>
+                <div onclick="toggleViewMode()" id="view-mode-btn" class="px-5 py-2 bg-white shadow-sm border rounded-3xl cursor-pointer">Cards view</div>
+            </div>
+        </div>
+        
+        <!-- CHAT INTERFACE -->
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden mb-8">
+            <div class="bg-emerald-50 px-6 py-4 border-b">
+                <div class="flex items-center gap-x-3">
+                    <div class="w-8 h-8 bg-emerald-500 rounded-2xl flex items-center justify-center text-white">🤖</div>
+                    <div>DhakaNest AI Agent <span class="ml-2 text-xs bg-emerald-200 px-3 py-1 rounded-3xl">Matching 142 apartments</span></div>
+                </div>
+            </div>
+            
+            <div id="chat-messages" class="h-96 overflow-y-auto p-6 space-y-6 bg-slate-50">
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 bg-emerald-500 text-white rounded-2xl flex items-center justify-center">🤖</div>
+                    <div class="chat-bubble bg-white px-6 py-4 rounded-3xl rounded-tl-none">
+                        Hi! I'm your AI apartment matcher for Dhaka.<br>
+                        Tell me what you need, e.g. "2 bedroom under 20000 taka near mosque in Dhanmondi"
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-4 bg-white border-t flex gap-3">
+                <input id="chat-input" onkeydown="if(event.key === 'Enter') sendChatMessage()" type="text" 
+                       placeholder="2 bedroom flat under 25k near market in Gulshan..."
+                       class="flex-1 px-6 py-5 bg-slate-100 rounded-3xl">
+                <button onclick="sendChatMessage()" class="w-12 h-12 bg-emerald-500 hover:bg-emerald-600 text-white rounded-3xl text-2xl">↑</button>
+            </div>
+        </div>
+        
+        <!-- RESULTS -->
+        <div id="results-section" class="hidden">
+            <div class="flex justify-between mb-6">
+                <h3 class="font-semibold text-2xl" id="results-title">Best AI Matches <span class="text-emerald-500">(0 found)</span></h3>
+                <button onclick="clearResults()" class="text-slate-400">Clear search</button>
+            </div>
+            <div id="results-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="results-table" class="hidden bg-white rounded-3xl overflow-hidden">
+                <table class="w-full">
+                    <thead class="border-b">
+                        <tr>
+                            <th class="text-left px-8 py-5">Location</th>
+                            <th class="text-left px-8 py-5">Rent</th>
+                            <th class="text-left px-8 py-5">Rooms</th>
+                            <th class="text-left px-8 py-5">Match %</th>
+                            <th class="text-left px-8 py-5">Nearby</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div onclick="if(event.target.id === 'profile-modal')hideProfile()" id="profile-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[9999]">
+        <div onclick="event.stopPropagation()" class="bg-white rounded-3xl max-w-lg w-full mx-4 p-8">
+            <h2 class="text-3xl font-semibold mb-8">Your Verified Profile</h2>
+            <div id="profile-content"></div>
+            <div class="mt-10 flex gap-x-4">
+                <button onclick="hideProfile()" class="flex-1 py-6 border rounded-3xl">Close</button>
+                <button onclick="simulateRatingFlow()" class="flex-1 py-6 bg-amber-400 text-white rounded-3xl">Rate a flat (demo)</button>
+            </div>
+        </div>
+    </div>
+
+    <div onclick="if(event.target.id === 'contact-modal')hideContactModal()" id="contact-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[9999]">
+        <div onclick="event.stopPropagation()" class="bg-white rounded-3xl w-full max-w-xl mx-4">
+            <div class="px-8 py-6 border-b flex justify-between">
+                <div class="flex items-center gap-x-3">
+                    <div id="modal-owner-avatar" class="w-9 h-9 bg-amber-100 rounded-2xl flex items-center justify-center">👨‍💼</div>
+                    <div>
+                        <p id="modal-owner-name" class="font-semibold"></p>
+                        <p id="modal-owner-phone" class="text-xs text-emerald-500"></p>
+                    </div>
+                </div>
+                <button onclick="hideContactModal()" class="text-3xl text-slate-300">×</button>
+            </div>
+            <div id="contact-chat-messages" class="h-96 p-6 space-y-6 overflow-y-auto"></div>
+            <div class="p-4 border-t flex">
+                <input id="contact-input" type="text" placeholder="Type safe message here..." class="flex-1 px-6 py-5 bg-slate-100 rounded-3xl">
+                <button onclick="sendContactMessage()" class="ml-3 px-8 bg-emerald-500 text-white rounded-3xl">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/database.js"></script>
+    <script src="js/search-algorithm.js"></script>
+    <script src="js/tenant.js"></script>
+    <script src="js/owner.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/navigation.js"></script>
+</body>
+</html>
