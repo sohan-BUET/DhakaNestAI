@@ -22,3 +22,16 @@
 
 ## 🤝 Contributing
 This project is developed by students from **BUET**. Contributions are welcome! Feel free to fork the repo and submit a pull request.
+
+
+project/
+├── index.html          (Main entry with all screens)
+├── css/
+│   └── style.css       (Global styles)
+└── js/
+    ├── database.js     (Backend database + 50+ sample apartments)
+    ├── search-algorithm.js (AI search & matching engine)
+    ├── tenant.js       (Tenant page UI logic)
+    ├── owner.js        (Owner page UI logic)
+    ├── auth.js         (Authentication & user management)
+    └── navigation.js   (Screen navigation & utilities)
