@@ -38,38 +38,39 @@ function renderMyFlats() {
     myPostedFlats.forEach(flat => {
         const card = document.createElement('div');
         card.className = 'bg-white border border-slate-200 rounded-3xl p-5 hover:shadow-md transition';
+        card.style.cursor = 'default';
         card.innerHTML = `
             <div class="flex justify-between items-start">
                 <div>
-                    <h4 class="font-semibold text-lg">${flat.location}</h4>
-                    <p class="text-xs text-slate-500 mt-1">Posted ${new Date(flat.createdAt).toLocaleDateString()}</p>
+                    <h4 class="font-semibold text-lg" style="cursor: default;">${flat.location}</h4>
+                    <p class="text-xs text-slate-500 mt-1" style="cursor: default;">Posted ${new Date(flat.createdAt).toLocaleDateString()}</p>
                 </div>
                 <div class="text-right">
-                    <div class="text-2xl font-bold text-emerald-600">${flat.rent}৳</div>
-                    <div class="text-xs text-slate-400">/month</div>
+                    <div class="text-2xl font-bold text-emerald-600" style="cursor: default;">${flat.rent}৳</div>
+                    <div class="text-xs text-slate-400" style="cursor: default;">/month</div>
                 </div>
             </div>
             
             <div class="flex flex-wrap gap-2 mt-4">
-                <span class="bg-slate-100 px-3 py-1 rounded-2xl text-xs">${flat.rooms} rooms</span>
-                <span class="bg-slate-100 px-3 py-1 rounded-2xl text-xs">${flat.gas} gas</span>
-                <span class="bg-slate-100 px-3 py-1 rounded-2xl text-xs">${flat.electricity}</span>
-                ${flat.lift ? '<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-2xl text-xs">Lift ✓</span>' : ''}
-                ${flat.garage ? '<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-2xl text-xs">Garage ✓</span>' : ''}
+                <span class="bg-slate-100 px-3 py-1 rounded-2xl text-xs" style="cursor: default;">${flat.rooms} rooms</span>
+                <span class="bg-slate-100 px-3 py-1 rounded-2xl text-xs" style="cursor: default;">${flat.gas} gas</span>
+                <span class="bg-slate-100 px-3 py-1 rounded-2xl text-xs" style="cursor: default;">${flat.electricity}</span>
+                ${flat.lift ? '<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-2xl text-xs" style="cursor: default;">Lift ✓</span>' : ''}
+                ${flat.garage ? '<span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-2xl text-xs" style="cursor: default;">Garage ✓</span>' : ''}
             </div>
             
             ${flat.preferredTenants ? `
                 <div class="mt-3 p-3 bg-amber-50 rounded-2xl">
-                    <p class="text-xs text-amber-700">👥 ${flat.preferredTenants}</p>
+                    <p class="text-xs text-amber-700" style="cursor: default;">👥 ${flat.preferredTenants}</p>
                 </div>
             ` : ''}
             
             <div class="mt-4 pt-4 border-t flex justify-between items-center">
                 <div class="flex items-center gap-1">
-                    <span class="text-yellow-500">⭐</span>
-                    <span class="text-sm">${flat.rating || 'New'}</span>
+                    <span class="text-yellow-500" style="cursor: default;">⭐</span>
+                    <span class="text-sm" style="cursor: default;">${flat.rating || 'New'}</span>
                 </div>
-                <button onclick="deleteFlat(${flat.id})" class="text-red-500 text-sm hover:text-red-700">Delete</button>
+                <button onclick="deleteFlat(${flat.id})" class="text-red-500 text-sm hover:text-red-700 cursor-pointer" style="cursor: pointer;">Delete</button>
             </div>
         `;
         container.appendChild(card);
@@ -118,7 +119,9 @@ function postApartment(event) {
     };
     
     // Add to database
-    window.DhakaNestDB.addFlat(newFlat);
+    if (window.DhakaNestDB) {
+        window.DhakaNestDB.addFlat(newFlat);
+    }
     
     // Add to user's list
     myPostedFlats.unshift(newFlat);
@@ -129,13 +132,17 @@ function postApartment(event) {
     // Reset form
     event.target.reset();
     document.getElementById('owner-map').classList.add('hidden');
+    if (mapInstance) {
+        mapInstance.remove();
+        mapInstance = null;
+    }
     
     // Refresh display
     renderMyFlats();
     
     // Show success message
     const successMsg = document.createElement('div');
-    successMsg.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-3xl shadow-lg z-50 animate-bounce';
+    successMsg.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-3xl shadow-lg z-50';
     successMsg.innerHTML = '🎉 Apartment posted! AI matching active.';
     document.body.appendChild(successMsg);
     setTimeout(() => successMsg.remove(), 3000);
@@ -146,15 +153,23 @@ function deleteFlat(flatId) {
     if (confirm('Are you sure you want to delete this listing?')) {
         myPostedFlats = myPostedFlats.filter(flat => flat.id !== flatId);
         localStorage.setItem('my_posted_flats', JSON.stringify(myPostedFlats));
-        window.DhakaNestDB.deleteFlat(flatId);
+        if (window.DhakaNestDB) {
+            window.DhakaNestDB.deleteFlat(flatId);
+        }
         renderMyFlats();
         alert('Apartment deleted successfully.');
     }
 }
 
-// Get current location for map
+// Get current location and show map
 function getCurrentLocation() {
     if (navigator.geolocation) {
+        // Show loading indicator
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '📍 Getting location...';
+        btn.disabled = true;
+        
         navigator.geolocation.getCurrentPosition(position => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
@@ -162,26 +177,120 @@ function getCurrentLocation() {
             document.getElementById('lat-input').value = lat;
             document.getElementById('lng-input').value = lng;
             
+            // Show and render map
             const mapContainer = document.getElementById('owner-map');
             mapContainer.classList.remove('hidden');
-            mapContainer.innerHTML = '<div id="leaflet-map-owner" class="leaflet-container"></div>';
+            mapContainer.innerHTML = '<div id="leaflet-map-owner" class="leaflet-container" style="height: 300px; border-radius: 16px;"></div>';
             
-            if (mapInstance) mapInstance.remove();
+            // Initialize map
+            if (mapInstance) {
+                mapInstance.remove();
+            }
+            
             mapInstance = L.map('leaflet-map-owner').setView([lat, lng], 16);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap'
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(mapInstance);
             
-            L.marker([lat, lng]).addTo(mapInstance)
-                .bindPopup('Your apartment location').openPopup();
+            // Add marker with popup
+            const marker = L.marker([lat, lng]).addTo(mapInstance);
+            marker.bindPopup(`
+                <b>Your Apartment Location</b><br>
+                Latitude: ${lat.toFixed(6)}<br>
+                Longitude: ${lng.toFixed(6)}<br>
+                <i>Click to confirm location</i>
+            `).openPopup();
             
-            document.getElementById('location-input').value = "Current location";
-        }, () => {
-            alert('Unable to get location. Using Dhanmondi as default.');
+            // Add circle to show area
+            L.circle([lat, lng], {
+                color: '#10b981',
+                fillColor: '#10b981',
+                fillOpacity: 0.1,
+                radius: 100
+            }).addTo(mapInstance);
+            
+            // Update location input
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+                .then(response => response.json())
+                .then(data => {
+                    const address = data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                    document.getElementById('location-input').value = address.split(',')[0] || "Dhaka Location";
+                })
+                .catch(() => {
+                    document.getElementById('location-input').value = `Dhaka (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+                });
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            
+            // Success message
+            const successMsg = document.createElement('div');
+            successMsg.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-3xl shadow-lg z-50';
+            successMsg.innerHTML = '📍 Location captured! Map updated.';
+            document.body.appendChild(successMsg);
+            setTimeout(() => successMsg.remove(), 2000);
+            
+        }, error => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            
+            let errorMsg = 'Unable to get location. ';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMsg += 'Please allow location access.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMsg += 'Location information unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    errorMsg += 'Location request timed out.';
+                    break;
+            }
+            alert(errorMsg + ' Using Dhanmondi as default.');
+            
+            // Set default Dhanmondi location
+            const defaultLat = 23.7461;
+            const defaultLng = 90.3743;
+            document.getElementById('lat-input').value = defaultLat;
+            document.getElementById('lng-input').value = defaultLng;
+            showMapPreview(defaultLat, defaultLng, "Dhanmondi (Default)");
         });
     } else {
-        alert('Geolocation not supported');
+        alert('Geolocation is not supported by your browser. Using Dhanmondi as default.');
+        const defaultLat = 23.7461;
+        const defaultLng = 90.3743;
+        document.getElementById('lat-input').value = defaultLat;
+        document.getElementById('lng-input').value = defaultLng;
+        showMapPreview(defaultLat, defaultLng, "Dhanmondi (Default)");
     }
+}
+
+// Show map preview function
+function showMapPreview(lat, lng, locationName) {
+    const mapContainer = document.getElementById('owner-map');
+    mapContainer.classList.remove('hidden');
+    mapContainer.innerHTML = '<div id="leaflet-map-owner" class="leaflet-container" style="height: 300px; border-radius: 16px;"></div>';
+    
+    if (mapInstance) {
+        mapInstance.remove();
+    }
+    
+    mapInstance = L.map('leaflet-map-owner').setView([lat, lng], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(mapInstance);
+    
+    L.marker([lat, lng]).addTo(mapInstance)
+        .bindPopup(`📍 ${locationName}`).openPopup();
+    
+    L.circle([lat, lng], {
+        color: '#10b981',
+        fillColor: '#10b981',
+        fillOpacity: 0.1,
+        radius: 100
+    }).addTo(mapInstance);
+    
+    document.getElementById('location-input').value = locationName;
 }
 
 // Refresh flats list
@@ -199,3 +308,10 @@ document.addEventListener('DOMContentLoaded', function() {
         currentUser = JSON.parse(storedUser);
     }
 });
+
+// Make functions global
+window.renderMyFlats = renderMyFlats;
+window.refreshMyFlats = refreshMyFlats;
+window.postApartment = postApartment;
+window.getCurrentLocation = getCurrentLocation;
+window.deleteFlat = deleteFlat;

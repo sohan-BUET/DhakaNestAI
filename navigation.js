@@ -44,31 +44,31 @@ function renderLiveMatches() {
     if (!container) return;
     
     // Get top matches from database
-    const stats = window.DhakaNestDB ? window.DhakaNestDB.getStatistics() : null;
     const flats = window.DhakaNestDB ? window.DhakaNestDB.getAllFlats().slice(0, 5) : [];
     
     if (flats.length > 0) {
         container.innerHTML = flats.map(flat => `
-            <div class="flex justify-between items-center p-3 hover:bg-slate-50 rounded-2xl transition">
+            <div class="flex justify-between items-center p-3 hover:bg-slate-50 rounded-2xl transition" style="cursor: default;">
                 <div>
-                    <div class="font-medium">${flat.location}</div>
-                    <div class="text-xs text-slate-500">${flat.rooms} BR • ${flat.rent}৳/month</div>
+                    <div class="font-medium" style="cursor: default;">${flat.location}</div>
+                    <div class="text-xs text-slate-500" style="cursor: default;">${flat.rooms} BR • ${flat.rent}৳/month</div>
                 </div>
-                <div class="text-emerald-500 font-semibold">${Math.floor(85 + Math.random() * 15)}% match</div>
+                <div class="text-emerald-500 font-semibold" style="cursor: default;">${Math.floor(85 + Math.random() * 15)}% match</div>
             </div>
         `).join('');
         
+        const stats = window.DhakaNestDB ? window.DhakaNestDB.getStatistics() : null;
         container.innerHTML += `
             <div class="text-center pt-4 border-t">
-                <div class="text-sm text-emerald-600 font-medium">${stats ? stats.totalFlats : '50'}+ Active Listings</div>
-                <div class="text-xs text-slate-400">Updated just now • AI Matching Active</div>
+                <div class="text-sm text-emerald-600 font-medium" style="cursor: default;">${stats ? stats.totalFlats : '50'}+ Active Listings</div>
+                <div class="text-xs text-slate-400" style="cursor: default;">Updated just now • AI Matching Active</div>
             </div>
         `;
     } else {
         container.innerHTML = `
             <div class="text-center py-8">
                 <div class="text-4xl mb-2">🏠</div>
-                <p class="text-slate-500">Loading matches...</p>
+                <p class="text-slate-500" style="cursor: default;">Loading matches...</p>
             </div>
         `;
     }
@@ -95,3 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Refresh live matches every 30 seconds
     setInterval(renderLiveMatches, 30000);
 });
+
+// Make functions global
+window.navigateTo = navigateTo;
+window.renderLiveMatches = renderLiveMatches;
